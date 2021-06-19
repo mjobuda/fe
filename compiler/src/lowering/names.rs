@@ -1,6 +1,7 @@
 use crate::lowering::utils::ZeroSpanNode;
 use fe_analyzer::namespace::types::{Array, Base, FixedSize, Integer, SafeNames, Tuple};
-use fe_parser::ast as fe;
+use fe_parser::{ast as fe, node::Node};
+use vec1::Vec1;
 
 /// The name of a lowered list expression generator function.
 pub fn list_expr_generator_fn_name(list_expr_type: &Array) -> String {
@@ -35,7 +36,16 @@ pub fn fixed_size_type_desc(typ: &FixedSize) -> fe::TypeDesc {
             dimension: array.size,
             typ: fixed_size_type_desc(&array.inner.clone().into()).into_boxed_node(),
         },
-        FixedSize::Tuple(_) => todo!(),
+        FixedSize::Tuple(tuple) => fe::TypeDesc::Tuple {
+            items: {
+                let mut v1: Vec1<Node<fe::TypeDesc>> =
+                    Vec1::new(fixed_size_type_desc(tuple.items.first()).into_node());
+                for item in tuple.items.iter().skip(1) {
+                    v1.push(fixed_size_type_desc(&item).into_node())
+                }
+                Vec1::from(v1)
+            },
+        },
         FixedSize::String(_) => todo!(),
         FixedSize::Contract(_) => todo!(),
         FixedSize::Struct(_) => todo!(),
