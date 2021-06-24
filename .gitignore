@@ -1,5 +1,6 @@
 .idea
 /target
+/output
 **/*.rs.bk
 tarpaulin-report.html
 /output
